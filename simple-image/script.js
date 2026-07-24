@@ -71,6 +71,7 @@ import { VERTEX, FRAGMENT } from './shaders.js';
         var texture = await textLoader.loadAsync('./image.jpg');
         app(texture);
     }
+
     init();
 
 })(jQuery);
