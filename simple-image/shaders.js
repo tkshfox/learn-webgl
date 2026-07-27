@@ -9,25 +9,19 @@ export const VERTEX = `
 `;
 
 export const FRAGMENT = `
-    uniform sampler2D uTexture;
-    uniform float uTextureAspect;
-    uniform float uScreenAspect;
+    uniform sampler2D uTex;
+    uniform float uTexAspect;
+    uniform float uResolution;
     varying vec2 vUv;
 
-    vec2 getCover(vec2 uv, float textureAspect, float screenAspect) {
-        vec2 ratio = vec2(
-            min(screenAspect / textureAspect, 1.0),
-            min(textureAspect / screenAspect, 1.0)
-        );
-        return vec2(
-            (vUv.x - 0.5) * ratio.x + 0.5,
-            (vUv.y - 0.5) * ratio.y + 0.5
-        );
+    vec2 cover(vec2 uv, float ta, float re) {
+        vec2 ratio = re < ta ? vec2(re / ta, 1.0) : vec2(1.0, ta / re);
+        return (uv - 0.5) * ratio + 0.5;
     }
 
     void main() {
-        vec2 textureUv = getCover(vUv, uTextureAspect, uScreenAspect);
-        vec4 color = texture2D(uTexture, textureUv);
+        vec2 textureUv = cover(vUv, uTexAspect, uResolution);
+        vec4 color = texture2D(uTex, textureUv);
         gl_FragColor = color;
     }
 `;

@@ -6,20 +6,22 @@ import { VERTEX, FRAGMENT } from './shaders.js';
     var textLoader = new THREE.TextureLoader();
 
     function getWindowSize() {
-        var width = window.innerWidth;
-        var height = window.innerHeight;
+        var width  = $(window).width();
+        var height = $(window).innerHeight();
         var aspect = width / height;
 
         return { width, height, aspect };
     }
 
     function app(texture) {
-        var windowSize = getWindowSize();
+        var ws = getWindowSize();
 
         var renderer = new THREE.WebGLRenderer(  );
-        renderer.setSize(windowSize.width, windowSize.height);
+        renderer.setSize(ws.width, ws.height);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        $webgl[0].appendChild(renderer.domElement);
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.outputColorSpace = THREE.SRGBColorSpace;
+        $webgl.append(renderer.domElement);
 
         var textureAspect = texture.image.width / texture.image.height;
 
@@ -29,15 +31,9 @@ import { VERTEX, FRAGMENT } from './shaders.js';
         camera.matrixAutoUpdate= false;
 
         var uniforms = {
-            uTexture: {
-                value: texture
-            },
-            uTextureAspect: {
-                value: textureAspect
-            },
-            uScreenAspect: {
-                value: windowSize.aspect
-            }
+            uTex: { value: texture },
+            uTexAspect: { value: textureAspect },
+            uResolution: { value: ws.aspect }
         };
         var geometry = new THREE.PlaneGeometry(2, 2);
         var material = new THREE.ShaderMaterial({
@@ -52,16 +48,16 @@ import { VERTEX, FRAGMENT } from './shaders.js';
         light.position.set(1, 1, 1);
         scene.add(light);
 
-        function tick(time) {
+        function tick() {
             renderer.render(scene, camera);
             requestAnimationFrame(tick);
         }
-        requestAnimationFrame(tick);
+        tick();
 
         function onResize() {
-            windowSize = getWindowSize();
-            uniforms.uScreenAspect.value = windowSize.aspect;
-            renderer.setSize(windowSize.width, windowSize.height);
+            ws = getWindowSize();
+            uniforms.uResolution.value = ws.aspect;
+            renderer.setSize(ws.width, ws.height);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         }
         $(window).on('resize', onResize);
