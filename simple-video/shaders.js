@@ -14,18 +14,20 @@ export const FRAGMENT = `
     uniform float uWinRes;
     varying vec2 vUv;
 
+    vec2 getRatio(float texRes, float winRes) {
+        return
+            (texRes > winRes) ?
+                vec2(winRes / texRes, 1.0) :
+                vec2(1.0, texRes / winRes);
+    }
+
+    vec2 getCover(vec2 uv, vec2 ratio) {
+        return (uv - 0.5) * ratio + 0.5;
+    }
+
     void main() {
-        vec2 ratio = vec2(1.0, 1.0);
-        if(uTexRes > uWinRes) {
-            ratio = vec2(uWinRes / uTexRes, 1.0);
-        }
-        else {
-            ratio = vec2(1.0, uTexRes / uWinRes);
-        }
-        vec2 texUV = vec2(
-            (vUv.x - 0.5) * ratio.x + 0.5,
-            (vUv.y - 0.5) * ratio.y + 0.5
-        );
+        vec2 ratio = getRatio(uTexRes, uWinRes);
+        vec2 texUV = getCover(vUv, ratio);
 
         gl_FragColor = texture2D(uTex, texUV);
     }
