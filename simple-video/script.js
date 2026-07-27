@@ -11,19 +11,22 @@ import { VERTEX, FRAGMENT } from './shaders.js';
     }
 
     function appVideo() {
-        var container = $("#video");
+        var $videoWrapper = $('#video');
+        var $poster = $('.poster', $videoWrapper);
         var size = windowSize();
 
         var scene = new THREE.Scene();
         var camera = new THREE.OrthographicCamera();
         camera.position.z = 1;
 
-        var renderer = new THREE.WebGLRenderer();
+        var renderer = new THREE.WebGLRenderer({
+            canvas: $videoWrapper.find('#canvas')[0],
+            antialias: true,
+        });
         renderer.setSize(size.w, size.h);
-        container.append(renderer.domElement);
 
         const video = document.createElement("video");
-        video.src = container.data('src');
+        video.src = $videoWrapper.data('src');
         video.muted = true;
         video.loop = true;
         video.playsInline = true;
@@ -47,8 +50,12 @@ import { VERTEX, FRAGMENT } from './shaders.js';
         const plane = new THREE.Mesh(geo, mat);
         scene.add(plane);
 
-        video.addEventListener('loadedmetadata', () => {
-            mat.uniforms.uTexRes.value = video.videoWidth / video.videoHeight;
+        $(video).on('loadedmetadata', function() {
+            mat.uniforms.uTexRes.value = this.videoWidth / this.videoHeight;
+        });
+
+        $(video).on('canplay', function () {
+            $poster.addClass('is-hidden');
         });
 
         function tick(time) {

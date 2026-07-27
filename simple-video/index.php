@@ -19,8 +19,10 @@
 <body>
     <div
         id="video"
-        data-src="smaple.mp4?<?= time() ?>"
-        data-poster="poster.jpg?<?= time() ?>"></div>
+        data-src="smaple.mp4?<?= time() ?>">
+        <canvas id="canvas"></canvas>
+        <div class="poster" style="background-image:url(poster.jpg?<?= time() ?>);"></div>
+    </div>
 
     <script type="module" src="script.js?<?= time() ?>"></script>
 </body>

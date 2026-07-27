@@ -8,8 +8,6 @@ export const VERTEX = `
 `;
 
 export const FRAGMENT = `
-    precision highp float;
-
     uniform sampler2D uTex;
     uniform float uTime;
     uniform float uTexRes;
