@@ -28,7 +28,7 @@ $imgs = [
 
     <div
         id="webgl"
-        data-imgs="<?= htmlspecialchars(json_encode($imgs, JSON_UNESCAPED_SLASHES, JSON_UNESCAPED_UNICODE)); ?>"
+        data-imgs="<?= htmlspecialchars(json_encode($imgs, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)); ?>"
     >
         <canvas id="canvas"></canvas>
     </div>

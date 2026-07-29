@@ -6,7 +6,7 @@ import { VERTEX, FRAGMENT } from './shaders.js';
     var $canvas = $('#canvas', $webgl);
     if (!$webgl.length && !$canvas.lengt) return false;
 
-    var textLoader = new THREE.TextureLoader();
+    var textureLoader = new THREE.TextureLoader();
 
     function getWindowSize() {
         var width  = $(window).width();
@@ -16,18 +16,28 @@ import { VERTEX, FRAGMENT } from './shaders.js';
         return { width, height, aspect };
     }
 
-    function app(texture) {
+    function aspectOf(texture) {
+        return texture.image.width / texture.image.height;
+    }
+
+    function easeInOutCubic(t) {
+        return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    }
+
+    function app(textures) {
         var ws = getWindowSize();
+
+        var count     = textures.length;
+        var current   = 0;
+        var next      = 0;
+        var startTime = 0;
+        var isAnimate = false;
 
         var renderer = new THREE.WebGLRenderer({
             canvas: $canvas[0],
         });
         renderer.setSize(ws.width, ws.height);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.outputColorSpace = THREE.SRGBColorSpace;
-
-        var textureAspect = texture.image.width / texture.image.height;
 
         var scene = new THREE.Scene();
 
@@ -35,9 +45,11 @@ import { VERTEX, FRAGMENT } from './shaders.js';
         camera.matrixAutoUpdate= false;
 
         var uniforms = {
-            uTex: { value: texture },
-            uTexAspect: { value: textureAspect },
-            uResolution: { value: ws.aspect }
+            uFrom:    { value: textures[0] },
+            uTo:      { value: textures[1] },
+            uFromRes: { value: aspectOf(textures[0]) },
+            uToRes:   { value: aspectOf(textures[1]) },
+            uWinRes:  { value: ws.aspect }
         };
         var geometry = new THREE.PlaneGeometry(2, 2);
         var material = new THREE.ShaderMaterial({
@@ -46,13 +58,31 @@ import { VERTEX, FRAGMENT } from './shaders.js';
             fragmentShader: FRAGMENT
         });
         var plane = new THREE.Mesh(geometry, material);
+        plane.frustumCulled = false;
         scene.add(plane);
 
-        var light = new THREE.DirectionalLight(0xffffff, 1);
-        light.position.set(1, 1, 1);
-        scene.add(light);
+        function goTo(index, direction) {
+            if (isAnimate || count < 2) return;
+
+            var target = ((index % count) + count) % count;
+            if (target === current) return;
+        }
+
+        function toNext() {
+        }
+
+        function toPrev() {
+        }
+
+        function settle() {
+        }
 
         function tick() {
+            if (isAnimate) {
+                var t = Math.min((now - startTime) / DURATION, 1);
+                uniforms.uProgress.value = easeInOutCubic(t);
+                if (t >= 1) settle();
+            }
             renderer.render(scene, camera);
             requestAnimationFrame(tick);
         }
@@ -60,7 +90,7 @@ import { VERTEX, FRAGMENT } from './shaders.js';
 
         function onResize() {
             ws = getWindowSize();
-            uniforms.uResolution.value = ws.aspect;
+            uniforms.uWinRes.value = ws.aspect;
             renderer.setSize(ws.width, ws.height);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         }
@@ -68,8 +98,12 @@ import { VERTEX, FRAGMENT } from './shaders.js';
     }
 
     async function init() {
-        var texture = await textLoader.loadAsync('./image.jpg');
-        app(texture);
+        var imgs = $webgl.data('imgs');
+        var textures = await Promise.all(imgs.map(function (src) {
+            return textureLoader.loadAsync(src);
+        }));
+
+        app(textures);
     }
 
     init();

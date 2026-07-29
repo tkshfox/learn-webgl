@@ -9,9 +9,11 @@ export const VERTEX = `
 `;
 
 export const FRAGMENT = `
-    uniform sampler2D uTex;
-    uniform float uTexAspect;
-    uniform float uResolution;
+    uniform sampler2D uFrom;
+    uniform sampler2D uTo;
+    uniform float uFromRes;
+    uniform float uToRes;
+    uniform float uWinRes;
     varying vec2 vUv;
 
     vec2 cover(vec2 uv, float ta, float re) {
@@ -20,8 +22,8 @@ export const FRAGMENT = `
     }
 
     void main() {
-        vec2 textureUv = cover(vUv, uTexAspect, uResolution);
-        vec4 color = texture2D(uTex, textureUv);
+        vec2 textureUv = cover(vUv, uFromRes, uWinRes);
+        vec4 color = texture2D(uFrom, textureUv);
         gl_FragColor = color;
     }
 `;
