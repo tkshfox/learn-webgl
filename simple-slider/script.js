@@ -75,6 +75,24 @@ import { VERTEX, FRAGMENT } from './shaders.js';
         }
 
         function settle() {
+            current = next;
+
+            uniforms.uFrom.value = textures[current];
+            uniforms.uFromRes.value = aspectOf(textures[current]);
+            uniforms.uProgress.value = 0;
+
+            isAnimate = false;
+            startAutoplay();
+        }
+
+        function navigation() {
+            
+            var $prev = $('.button-prev', $webgl);
+            var $next = $('.button-next', $webgl);
+            if (!$prev.length || !$next.length) return;
+
+            $prev.on('click', toPrev);
+            $next.on('click', toNext);
         }
 
         function tick() {
