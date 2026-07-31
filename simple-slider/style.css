@@ -4,3 +4,88 @@ html, body {
     padding: 0px;
     margin: 0px;
 }
+
+#webgl {
+    position: relative;
+}
+
+#webgl #canvas {
+    display: block;
+}
+
+#webgl .button-next,
+#webgl .button-prev {
+    --pos-side: 30px;
+    all: unset;
+    cursor: pointer;
+    position: absolute;
+    inset: 50% var(--pos-side) auto auto;
+    transform: translate(0, -50%);
+    display: block;
+    width: 50px;
+    height: 50px;
+    background-color: #000;
+}
+
+#webgl .button-next::after,
+#webgl .button-prev::after {
+    content: '';
+    display: block;
+    width: 30px;
+    height: 30px;
+    position: absolute;
+    inset: 50% auto auto 50%;
+    background: url(./arrow.svg) center / 30px auto no-repeat;
+    filter: brightness(0) invert(1);
+    transform: translate(-50%, -50%);
+}
+
+#webgl .button-next {
+}
+
+#webgl .button-prev {
+    right: auto;
+    left: var(--pos-side);
+    transform: translate(0, -50%) scale(-1, 1);
+}
+
+@media (max-width: 768px) {
+    #webgl .button-next,
+    #webgl .button-prev {
+        --pos-side: 20px;
+        width: 45px;
+        height: 45px;
+    }
+
+    #webgl .button-next {
+    }
+    #webgl .button-prev {
+    }
+}
+
+#webgl .pagination {
+    position: absolute;
+    inset: auto 0 20px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+#webgl .pagination-bullet {
+    --w: 12px;
+    border: none;
+    cursor: pointer;
+    display: inline-block;
+    width: var(--w);
+    height: var(--w);
+    border-radius: var(--w);
+    background-color: #fcfcfc;
+    transition: transform 300ms, background 300ms;
+}
+
+#webgl .pagination-bullet.is-active {
+    transform: scale(1.05);
+    background-color: #8f1f1f;
+}

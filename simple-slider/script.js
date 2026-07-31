@@ -2,15 +2,20 @@ import * as THREE from 'three';
 import { VERTEX, FRAGMENT } from './shaders.js';
 
 (function ($) {
+
+
     var $webgl = $('#webgl');
     var $canvas = $('#canvas', $webgl);
-    if (!$webgl.length && !$canvas.lengt) return false;
+    if (!$webgl.length && !$canvas.length) return false;
+
+    const DURATION = 1000;
+    const INTERVAL = 4000;
 
     var textureLoader = new THREE.TextureLoader();
 
     function getWindowSize() {
         var width  = $(window).width();
-        var height = $(window).innerHeight();
+        var height = $(window).height();
         var aspect = width / height;
 
         return { width, height, aspect };
@@ -24,7 +29,7 @@ import { VERTEX, FRAGMENT } from './shaders.js';
         return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
     }
 
-    function app(textures) {
+    function app(textures, options) {
         var ws = getWindowSize();
 
         var count     = textures.length;
@@ -32,6 +37,7 @@ import { VERTEX, FRAGMENT } from './shaders.js';
         var next      = 0;
         var startTime = 0;
         var isAnimate = false;
+        var timerId   = null;
 
         var renderer = new THREE.WebGLRenderer({
             canvas: $canvas[0],
@@ -46,32 +52,63 @@ import { VERTEX, FRAGMENT } from './shaders.js';
 
         var uniforms = {
             uFrom:    { value: textures[0] },
-            uTo:      { value: textures[1] },
             uFromRes: { value: aspectOf(textures[0]) },
-            uToRes:   { value: aspectOf(textures[1]) },
-            uWinRes:  { value: ws.aspect }
+            uTo:      { value: null },
+            uToRes:   { value: 1 },
+            uWinRes: { value: ws.aspect },
+            uProgress: { value: 0 },
+            uDirection: { value: 1 },
         };
         var geometry = new THREE.PlaneGeometry(2, 2);
-        var material = new THREE.ShaderMaterial({
-            uniforms,
-            vertexShader: VERTEX,
-            fragmentShader: FRAGMENT
-        });
+        var material = new THREE.ShaderMaterial({ uniforms, vertexShader: VERTEX, fragmentShader: FRAGMENT });
         var plane = new THREE.Mesh(geometry, material);
         plane.frustumCulled = false;
         scene.add(plane);
+
+        function stopAutoplay() {
+            if (timerId === null) return;
+
+            clearTimeout(timerId);
+            timerId = null;
+        }
+
+        function startAutoplay() {
+            if (count < 2) return;
+
+            stopAutoplay();
+            timerId = setTimeout(toNext, INTERVAL);
+        }
 
         function goTo(index, direction) {
             if (isAnimate || count < 2) return;
 
             var target = ((index % count) + count) % count;
             if (target === current) return;
+
+            if (direction === undefined) {
+                direction = target > current ? 1 : -1;
+            }
+
+            stopAutoplay();
+            next = target;
+
+            uniforms.uTo.value = textures[next];
+            uniforms.uToRes.value = aspectOf(textures[next]);
+            uniforms.uDirection.value = direction || 1;
+            uniforms.uProgress.value = 0;
+
+            updatePagination(next);
+
+            startTime = performance.now();
+            isAnimate = true;
         }
 
         function toNext() {
+            goTo(current + 1, 1);
         }
 
         function toPrev() {
+            goTo(current - 1, -1);
         }
 
         function settle() {
@@ -85,43 +122,91 @@ import { VERTEX, FRAGMENT } from './shaders.js';
             startAutoplay();
         }
 
-        function navigation() {
-            
-            var $prev = $('.button-prev', $webgl);
-            var $next = $('.button-next', $webgl);
-            if (!$prev.length || !$next.length) return;
+        function buildNavigation() {
+            if (options && options.navigation !== true) return;
 
-            $prev.on('click', toPrev);
-            $next.on('click', toNext);
+            var $prev = $('<button class="button-prev"></button>');
+            var $next = $('<button class="button-next"></button>');
+            $prev.on('click.prev', toPrev);
+            $next.on('click.next', toNext);
+
+            $webgl.append($prev).append($next);
+        }
+
+        var $bullets = $();
+        function buildPagination() {
+            if (options && options.pagination !== true) return;
+            if (count < 2) return;
+
+            var $pagi = $('<div class="pagination"></div>');
+
+            for (var i = 0; i < count; i++) {
+                $pagi.append(
+                    $('<button class="pagination-bullet"></button>')
+                        .data('index', i)
+                );
+            }
+
+            $pagi.on('click', '.pagination-bullet', function () {
+                goTo($(this).data('index'));
+            });
+
+            $webgl.append($pagi);
+            $bullets = $pagi.find('.pagination-bullet');
+
+            updatePagination(current);
+        }
+
+        function updatePagination(index) {
+            if (!$bullets.length) return;
+
+            $bullets
+                .removeClass('is-active')
+                .eq(index)
+                .addClass('is-active');
         }
 
         function tick() {
             if (isAnimate) {
+                var now = performance.now();
                 var t = Math.min((now - startTime) / DURATION, 1);
+
                 uniforms.uProgress.value = easeInOutCubic(t);
+
                 if (t >= 1) settle();
             }
             renderer.render(scene, camera);
             requestAnimationFrame(tick);
         }
         tick();
+        startAutoplay();
+        buildNavigation();
+        buildPagination();
+        updatePagination(current);
 
         function onResize() {
             ws = getWindowSize();
             uniforms.uWinRes.value = ws.aspect;
             renderer.setSize(ws.width, ws.height);
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         }
+
+        $canvas.on('click', toNext);
+        $(document).on('visibilitychange', function () {
+            if (document.hidden) { stopAutoplay(); }
+            else { startAutoplay(); }
+        });
         $(window).on('resize', onResize);
+
     }
 
     async function init() {
         var imgs = $webgl.data('imgs');
+        var options = $webgl.data('options');
+
         var textures = await Promise.all(imgs.map(function (src) {
             return textureLoader.loadAsync(src);
         }));
-
-        app(textures);
+        app(textures, options);
     }
 
     init();

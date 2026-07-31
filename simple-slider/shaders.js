@@ -14,6 +14,8 @@ export const FRAGMENT = `
     uniform float uFromRes;
     uniform float uToRes;
     uniform float uWinRes;
+    uniform float uProgress;
+    uniform float uDirection;
     varying vec2 vUv;
 
     vec2 cover(vec2 uv, float ta, float re) {
@@ -22,8 +24,8 @@ export const FRAGMENT = `
     }
 
     void main() {
-        vec2 textureUv = cover(vUv, uFromRes, uWinRes);
-        vec4 color = texture2D(uFrom, textureUv);
-        gl_FragColor = color;
+        vec4 from = texture2D(uFrom, cover(vUv, uFromRes, uWinRes));
+        vec4 to   = texture2D(uTo,   cover(vUv, uToRes,   uWinRes));
+        gl_FragColor = mix(from, to, uProgress);
     }
 `;

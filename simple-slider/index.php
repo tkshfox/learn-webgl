@@ -24,13 +24,19 @@ $imgs = [
     './image2.jpg',
     './image3.jpg',
 ];
+$options = [
+    'navigation' => true,
+    'pagination' => true
+];
 ?>
 
     <div
         id="webgl"
         data-imgs="<?= htmlspecialchars(json_encode($imgs, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)); ?>"
+        data-options="<?= htmlspecialchars(json_encode($options, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)); ?>"
     >
         <canvas id="canvas"></canvas>
+
     </div>
 
     <script type="module" src="script.js?<?= time() ?>"></script>
