@@ -14,6 +14,8 @@ export const FRAGMENT = `
     uniform float uFromRes;
     uniform float uToRes;
     uniform float uWinRes;
+    uniform float uFromZoom;
+    uniform float uToZoom;
     uniform float uProgress;
     uniform float uDirection;
     varying vec2 vUv;
@@ -23,9 +25,13 @@ export const FRAGMENT = `
         return (uv - 0.5) * ratio + 0.5;
     }
 
+    vec2 zoom(vec2 uv, float scale) {
+        return (uv - 0.5) / scale + 0.5;
+    }
+
     void main() {
-        vec4 from = texture2D(uFrom, cover(vUv, uFromRes, uWinRes));
-        vec4 to   = texture2D(uTo,   cover(vUv, uToRes,   uWinRes));
+        vec4 from = texture2D(uFrom, zoom(cover(vUv, uFromRes, uWinRes), uFromZoom));
+        vec4 to   = texture2D(uTo,   zoom(cover(vUv, uToRes,   uWinRes), uToZoom));
         gl_FragColor = mix(from, to, uProgress);
     }
 `;

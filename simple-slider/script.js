@@ -3,7 +3,6 @@ import { VERTEX, FRAGMENT } from './shaders.js';
 
 (function ($) {
 
-
     var $webgl = $('#webgl');
     var $canvas = $('#canvas', $webgl);
     if (!$webgl.length && !$canvas.length) return false;
@@ -36,6 +35,7 @@ import { VERTEX, FRAGMENT } from './shaders.js';
         var current   = 0;
         var next      = 0;
         var startTime = 0;
+        var fromStart = performance.now();
         var isAnimate = false;
         var timerId   = null;
 
@@ -51,12 +51,14 @@ import { VERTEX, FRAGMENT } from './shaders.js';
         camera.matrixAutoUpdate= false;
 
         var uniforms = {
-            uFrom:    { value: textures[0] },
-            uFromRes: { value: aspectOf(textures[0]) },
-            uTo:      { value: null },
-            uToRes:   { value: 1 },
-            uWinRes: { value: ws.aspect },
-            uProgress: { value: 0 },
+            uFrom:      { value: textures[0] },
+            uFromRes:   { value: aspectOf(textures[0]) },
+            uTo:        { value: null },
+            uToRes:     { value: 1 },
+            uWinRes:    { value: ws.aspect },
+            uFromZoom:  { value: 1 },
+            uToZoom:    { value: 1 },
+            uProgress:  { value: 0 },
             uDirection: { value: 1 },
         };
         var geometry = new THREE.PlaneGeometry(2, 2);
@@ -118,6 +120,8 @@ import { VERTEX, FRAGMENT } from './shaders.js';
             uniforms.uFromRes.value = aspectOf(textures[current]);
             uniforms.uProgress.value = 0;
 
+            fromStart = startTime;
+
             isAnimate = false;
             startAutoplay();
         }
@@ -166,15 +170,23 @@ import { VERTEX, FRAGMENT } from './shaders.js';
                 .addClass('is-active');
         }
 
+        function zoomAt(elapsed) {
+            return 1 + 0.12 *  Math.min(elapsed / (INTERVAL + DURATION * 2), 1);
+        }
+
         function tick() {
+            var now = performance.now();
+
             if (isAnimate) {
-                var now = performance.now();
                 var t = Math.min((now - startTime) / DURATION, 1);
 
                 uniforms.uProgress.value = easeInOutCubic(t);
+                uniforms.uToZoom.value = zoomAt(now - startTime);
 
                 if (t >= 1) settle();
             }
+            uniforms.uFromZoom.value = zoomAt(now - fromStart);
+
             renderer.render(scene, camera);
             requestAnimationFrame(tick);
         }
