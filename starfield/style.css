@@ -1,0 +1,64 @@
+@charset 'utf-8';
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "DM Sans", sans-serif;
+    color: #fff;
+}
+
+h1, .starfield-text, .outro-text {
+    text-transform: uppercase;
+    font-size: clamp(2.5rem, 5vw, 10rem);
+    font-weight: 500;
+    line-height: 1;
+}
+
+.intro,
+.starfield,
+.outro {
+    position: relative;
+    width: 100;
+    height: 100vh;
+    height: 100svh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #0f0f0f;
+    overflow: hidden;
+}
+
+.starfield canvas {
+    position: absolute;
+    inset: 0 0 0 0;
+    margin: auto;
+    width: calc(100% - 2px);
+    height: calc(100% - 2px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 2rem;
+}
+
+.starfield-text {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+.starfield-text > p {
+    position: absolute;
+    inset: 50% auto auto 50%;
+    transform: translate(-50%, -50%);
+    width: 60%;
+    text-align: center;
+}
+
+@media (max-width: 1000px) {
+    .starfeild-text > p {
+        width: 80%;
+    }
+}
