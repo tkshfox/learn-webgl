@@ -4,7 +4,7 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>starfield | tkshfox</title>
-	<link rel="stylesheet" href="style.css?<?= time() ?>"><script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+	<link rel="stylesheet" href="style.css?<?= time() ?>">
 
 	<!-- jQuery -->
 	<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
@@ -24,7 +24,7 @@
         <canvas id="canvas"></canvas>
 
         <div class="starfield-text">
-            <p>The whole galaxy opns up<p>
+            <p>The whole galaxy opens up</p>
             <p>Leaving the known world behind</p>
             <p>And then everything goes still</p>
         </div>
@@ -36,6 +36,6 @@
         </div>
     </section>
 
-    <script module="module" scr="main.js?<?= time() ?>"></script>
+    <script src="main.js?<?= time() ?>"></script>
 </body>
 </html>

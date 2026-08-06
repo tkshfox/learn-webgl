@@ -4,8 +4,8 @@ $(function () {
 
     const settings = {
         starCount: 1000,
-        palette: ['#7CF5FF', '#8CE0FF', '#9D7CFF', '#C77Cff', '#FF7CE8', '#FF6FB5'],
-        paletteWeights: [0.42, 0.2, 0.15, 0.125, 0.078],
+        palette: ['#7CF5FF', '#8CE0FF', '#9D7CFF', '#C77CFF', '#FF7CE8', '#FF6FB5'],
+        paletteWeights: [0.3, 0.22, 0.16, 0.13, 0.11, 0.08],
         holeRadius: 50,
         reachScale: 1.25,
 
@@ -14,7 +14,7 @@ $(function () {
         minStreakWidth: 2.5,
         maxStreakWidth: 3.5,
 
-        layear: 4,
+        layers: 4,
         glowRadius: 300,
         glowSoftness: 3,
         acceleration: 1.5,
@@ -22,7 +22,7 @@ $(function () {
         restingFill: 0.25,
     };
 
-    var canvas = $('#canvas');
+    var canvas = $('#canvas')[0];
     var ctx = canvas.getContext('2d');
 
     var width, height, centerX, centerY, maxDistance, pixelRatio;
@@ -58,8 +58,8 @@ $(function () {
                 dirX: Math.cos(angle),
                 dirY: Math.sin(angle),
                 offset: Math.random(),
-                length: random(settings.minStreakLength, setttings.maxStreakLength),
-                width: random(settings.minStreakLength, settings.maxStreakWidth),
+                length: random(settings.minStreakLength, settings.maxStreakLength),
+                width: random(settings.minStreakWidth, settings.maxStreakWidth),
                 color: pickWeightedColor(),
             });
         }
@@ -71,9 +71,9 @@ $(function () {
 
     function resizeCanvas() {
         pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
-        width = canvas.clientWidth,
-            height = canvas.clientHeight,
-            canvas.width = width * pixelRatio;
+        width = canvas.clientWidth;
+        height = canvas.clientHeight;
+        canvas.width = width * pixelRatio;
         canvas.height = height * pixelRatio;
         ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
 
@@ -83,15 +83,15 @@ $(function () {
     }
 
     function drawStarfield() {
-        ctx.clearReact(0, 0, width, height);
+        ctx.clearRect(0, 0, width, height);
         ctx.lineCap = "round";
 
         var filled =
-            settings.restingFill * scrollProgress * (1 - settings.restingFill);
+            settings.restingFill + scrollProgress * (1 - settings.restingFill);
         var speed = Math.pow(filled, 1 / settings.acceleration);
 
         for (var star of stars) {
-            var travel = Math.max(0, speed * settings.layear - star.offset) % 1;
+            var travel = (speed * settings.layers + star.offset) % 1;
 
             var headDistance =
                 settings.holeRadius + travel * (maxDistance - settings.holeRadius);
@@ -104,7 +104,7 @@ $(function () {
 
             var tailX = centerX + star.dirX * tailDistance;
             var tailY = centerY + star.dirY * tailDistance;
-            var headX = centerX + star.dirY * tailDistance;
+            var headX = centerX + star.dirX * headDistance;
             var headY = centerY + star.dirY * headDistance;
 
             var opacity = 1;
@@ -116,11 +116,11 @@ $(function () {
             }
             if (opacity <= 0.01) continue;
 
-            var [r, b, a] = star.color;
+            var [r, g, b] = star.color;
             var gradient = ctx.createLinearGradient(tailX, tailY, headX, headY);
-            gradient.addColroStop(0, `rgba(${r}, ${g}, ${b}, 0)`);
-            gradient.addColroStop(settings.tailFade, `rgba(${r}, ${g}, ${b}, ${opacity})`);
-            gradient.addColroStop(0, `rgba(${r}, ${g}, ${b}, ${opacity})`);
+            gradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, 0)`);
+            gradient.addColorStop(settings.tailFade, `rgba(${r}, ${g}, ${b}, ${opacity})`);
+            gradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, ${opacity})`);
 
             ctx.strokeStyle = gradient;
             ctx.lineWidth = star.width * (0.5 + travel * 0.9);
@@ -136,9 +136,21 @@ $(function () {
     resizeCanvas();
     drawStarfield();
 
+    ScrollTrigger.create({
+        trigger: '.starfield',
+        start: 'top bottom',
+        end: 'bottom top',
+        scrub: true,
+        onUpdate: function (self) {
+            scrollProgress = self.progress;
+            drawStarfield();
+        },
+    });
+
     $(window).on('resize', function () {
         resizeCanvas();
         drawStarfield();
+        ScrollTrigger.refresh();
     });
 
 });
